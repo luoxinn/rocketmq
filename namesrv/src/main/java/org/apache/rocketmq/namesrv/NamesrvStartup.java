@@ -78,7 +78,10 @@ public class NamesrvStartup {
             System.exit(-1);
             return null;
         }
-
+        /**
+         * namesrv属性配置
+         * 业务参数，网络参数
+         */
         final NamesrvConfig namesrvConfig = new NamesrvConfig();
         final NettyServerConfig nettyServerConfig = new NettyServerConfig();
         nettyServerConfig.setListenPort(9876);
@@ -142,7 +145,9 @@ public class NamesrvStartup {
             controller.shutdown();
             System.exit(-3);
         }
-
+        /**
+         * 注册jvm钩子函数并启动服务器
+         */
         Runtime.getRuntime().addShutdownHook(new ShutdownHookThread(log, new Callable<Void>() {
             @Override
             public Void call() throws Exception {
