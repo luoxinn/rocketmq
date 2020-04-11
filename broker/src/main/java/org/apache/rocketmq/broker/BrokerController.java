@@ -333,6 +333,9 @@ public class BrokerController {
 
             final long initialDelay = UtilAll.computeNextMorningTimeMillis() - System.currentTimeMillis();
             final long period = 1000 * 60 * 60 * 24;
+            /**
+             * broker启动时向集群中所有nameserver发送心跳包,每隔30s,nameserver更新brokerLiveTable,如果120s没收到,讲移除broker路由信息且关闭socket链接.
+             */
             this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
                 @Override
                 public void run() {

@@ -128,25 +128,26 @@ public class BrokerOuterAPI {
         if (nameServerAddressList != null && nameServerAddressList.size() > 0) {
 
             final RegisterBrokerRequestHeader requestHeader = new RegisterBrokerRequestHeader();
-            requestHeader.setBrokerAddr(brokerAddr);
-            requestHeader.setBrokerId(brokerId);
-            requestHeader.setBrokerName(brokerName);
-            requestHeader.setClusterName(clusterName);
-            requestHeader.setHaServerAddr(haServerAddr);
+            requestHeader.setBrokerAddr(brokerAddr);//broker地址
+            requestHeader.setBrokerId(brokerId);//0 master >0 slave
+            requestHeader.setBrokerName(brokerName);//broker名称
+            requestHeader.setClusterName(clusterName);//集群名称
+            requestHeader.setHaServerAddr(haServerAddr);//master地址,初次请求时候为空,slave向nameserver注册后返回
             requestHeader.setCompressed(compressed);
 
             RegisterBrokerBody requestBody = new RegisterBrokerBody();
-            requestBody.setTopicConfigSerializeWrapper(topicConfigWrapper);
-            requestBody.setFilterServerList(filterServerList);
+            requestBody.setTopicConfigSerializeWrapper(topicConfigWrapper);//主题配置
+            requestBody.setFilterServerList(filterServerList);//消息服务过滤器
             final byte[] body = requestBody.encode(compressed);
             final int bodyCrc32 = UtilAll.crc32(body);
             requestHeader.setBodyCrc32(bodyCrc32);
             final CountDownLatch countDownLatch = new CountDownLatch(nameServerAddressList.size());
-            for (final String namesrvAddr : nameServerAddressList) {
+            for (final String namesrvAddr : nameServerAddressList) {//遍历nameserver
                 brokerOuterExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
                         try {
+                            //分别向nameserver注册
                             RegisterBrokerResult result = registerBroker(namesrvAddr,oneway, timeoutMills,requestHeader,body);
                             if (result != null) {
                                 registerBrokerResultList.add(result);
@@ -171,6 +172,21 @@ public class BrokerOuterAPI {
         return registerBrokerResultList;
     }
 
+    /**
+     * 网络发送代码
+     * @param namesrvAddr broker地址
+     * @param oneway
+     * @param timeoutMills
+     * @param requestHeader
+     * @param body
+     * @return
+     * @throws RemotingCommandException
+     * @throws MQBrokerException
+     * @throws RemotingConnectException
+     * @throws RemotingSendRequestException
+     * @throws RemotingTimeoutException
+     * @throws InterruptedException
+     */
     private RegisterBrokerResult registerBroker(
         final String namesrvAddr,
         final boolean oneway,
